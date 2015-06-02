@@ -1,0 +1,135 @@
+<?php
+function readxml_menu() {
+  $items = array();
+  
+
+$items['readxml'] = array( 
+    'title' => 'Read XML', 
+    'description' => 'Read XML',
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('readxml_form'), 
+    'access callback' => TRUE
+  );
+  return $items;
+}
+
+
+function readxml_form($form, &$form_state) {
+
+  if (file_exists(drupal_get_path('module', 'readxml') . '/drupal_7.xml')) {
+    $xml = simplexml_load_file(drupal_get_path('module', 'readxml') . '/drupal_7.xml'); 
+  } 
+
+$form['personal details'] = array(
+  '#type' => 'fieldset', 
+  '#title' => t('Personal Details'), 
+  '#weight' => 5, 
+  '#collapsible' => FALSE, 
+  '#collapsed' => FALSE,
+
+);
+
+
+ foreach ($xml->fieldset->fields->field as $key=>$field)
+  {
+	$fieldname=(string)$field->name;
+	$fieldlabel=(string)$field->label;
+	switch($field->type) {
+	case 'text':
+		$type='textfield';
+		$form['personal details'][$fieldname] = array(
+		  '#type' => $type,
+		  '#title' => t($fieldlabel),
+		  '#size' => $field->maxlen,
+		  '#required' => (bool)($field->required),
+		);
+		break;
+	case 'select':
+		$i=1;
+		$options=array();
+		$options[0] = (string)"Undefined";
+		foreach ($field->options->option as $key=>$option) {
+			$options[$i] = (string)($option->text);
+			$i++;
+		}
+		$form['personal details'][$fieldname] = array(
+		  '#type' => 'select',
+		  '#options' => $options,
+		  '#title' => t($fieldlabel),
+		  '#default_value' => ($field->default_value),
+		  '#required' => (bool)($field->required),
+		);
+
+		break;
+	case 'radio':
+		$i=1;
+		$options=array();
+		$options[0] = (string)"Undefined";
+		foreach ($field->options->option as $key=>$option) {
+			$options[$i] = (string)($option);
+			$i++;
+		}
+		$form['personal details'][$fieldname] = array(
+		  '#type' => 'radios',
+		  '#options' => $options,
+		  '#label' => $field->label,
+		  '#description' => $field->description,
+		  '#title' => t($fieldlabel),
+		  '#required' => (bool)($field->required),
+		  '#default_value' => ($field->default_value),
+		);
+		break;
+	default: 
+		$type=(string)$field->type;
+		$form['personal details'][$fieldname] = array(
+		  '#type' => $type,
+		  '#title' => t($fieldlabel),
+		  '#required' => (bool)($field->required),
+		  '#description' => $field->description,
+		);
+	}
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+
+  return $form;
+}
+
+
+
+function readxml_form_validate($form, &$form_state) {
+  if ($form_state['values']['forename'] == 'John') {
+    form_set_error('title', t('No Johns allowed'));
+  }
+
+  if (empty($form_state['values']['forename'])) {
+    form_set_error('title', t('Empty forename'));
+  }
+  if (empty($form_state['values']['surename'])) {
+    form_set_error('title', t('Empty surname'));
+  }
+  if (empty($form_state['values']['dob'])) {
+    form_set_error('title', t('Empty dob'));
+  }
+  if (empty($form_state['values']['bio'])) {
+    form_set_error('title', t('Empty bio'));
+  }
+  if (empty($form_state['values']['employment'])) {
+    form_set_error('title', t('Empty employment'));
+  }
+  if (empty($form_state['values']['gender'])) {
+    form_set_error('title', t('Empty gender'));
+  }
+  if (empty($form_state['values']['terms'])) {
+    form_set_error('title', t('Empty terms'));
+  }
+}
+
+
+function readxml_form_submit($form, &$form_state) {
+    drupal_set_message(t('The form has been submitted.'));
+    $form_state['redirect'] = 'http://www.controlnow.com';
+}

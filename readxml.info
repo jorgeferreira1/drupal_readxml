@@ -1,0 +1,3 @@
+name = readxml
+description = Read XML Module
+core = 7.x
